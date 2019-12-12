@@ -36,8 +36,8 @@ import java.util.Properties;
  */
 @Configuration
 @Component
-@PropertySource(value = {"config/jdbc.properties","application.properties"})
-public class DataSourceConfig extends LogFactory{
+@PropertySource(value = {"config/jdbc.properties", "application.properties"})
+public class DataSourceConfig extends LogFactory {
 
     @Value("${jdbc.driverClassName.db}")
     private String driverClassName;
@@ -98,7 +98,7 @@ public class DataSourceConfig extends LogFactory{
 
     @Value("${druid.filters}")
     private String filters;
-
+    /*这一个变量引用了sqlmap-config.xml配置文件*/
     @Value("${mybatis.config-location}")
     private String sqlmapConfigPath;
 
@@ -109,13 +109,13 @@ public class DataSourceConfig extends LogFactory{
     private String typeAlias;
 
     @Bean(name = "log-filter")
-    public Slf4jLogFilter logFilter(){
+    public Slf4jLogFilter logFilter() {
         return new Slf4jLogFilter();
     }
 
     @Bean(name = DBHelper.DB_TYPE_RW)
     @Primary
-    public DataSource master(){
+    public DataSource master() {
         DruidDataSource source = new DruidDataSource();
         //基本属性 url、user、password
         source.setUrl(wUrl);
@@ -156,7 +156,7 @@ public class DataSourceConfig extends LogFactory{
     }
 
     @Bean(name = DBHelper.DB_TYPE_R)
-    public DataSource slave(){
+    public DataSource slave() {
         DruidDataSource source = new DruidDataSource();
         //基本属性 url、user、password
         source.setUrl(rUrl);
@@ -198,7 +198,7 @@ public class DataSourceConfig extends LogFactory{
 
 
     @Bean(name = "dynamicDataSource")
-    public DataSource dynamicDataSource(){
+    public DataSource dynamicDataSource() {
         DynamicDataSource dynamicRoutingDataSource = new DynamicDataSource();
         //配置多数据源
         Map<Object, Object> dataSourceMap = new HashMap<>(2);
@@ -212,20 +212,20 @@ public class DataSourceConfig extends LogFactory{
     }
 
     @Bean(name = "sqlSessionFactory")
-    public SqlSessionFactoryBean sqlSessionFactoryBean() throws Exception{
+    public SqlSessionFactoryBean sqlSessionFactoryBean() throws Exception {
         SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
         sqlSessionFactoryBean.setVfs(SpringBootVFS.class);
         sqlSessionFactoryBean.setTypeAliasesPackage(typeAlias);
-        sqlSessionFactoryBean.setConfigLocation( new ClassPathResource(sqlmapConfigPath));
+        sqlSessionFactoryBean.setConfigLocation(new ClassPathResource(sqlmapConfigPath));
         PathMatchingResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
-        String packageSearchPath = PathMatchingResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX+mapperLocation;
+        String packageSearchPath = PathMatchingResourcePatternResolver.CLASSPATH_ALL_URL_PREFIX + mapperLocation;
         sqlSessionFactoryBean.setMapperLocations(resolver.getResources(packageSearchPath));
         sqlSessionFactoryBean.setDataSource(dynamicDataSource());
-        return  sqlSessionFactoryBean;
+        return sqlSessionFactoryBean;
     }
 
     @Bean(name = "jdbcTemplate")
-    public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory){
+    public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
         return new SqlSessionTemplate(sqlSessionFactory);
     }
 
@@ -239,16 +239,16 @@ public class DataSourceConfig extends LogFactory{
      * 配置事务的传播特性
      */
     @Bean(name = "txAdvice")
-    public TransactionInterceptor txAdvice(){
+    public TransactionInterceptor txAdvice() {
         TransactionInterceptor interceptor = new TransactionInterceptor();
         interceptor.setTransactionManager(transactionManager());
         Properties transactionAttributes = new Properties();
-        transactionAttributes.setProperty("save*","PROPAGATION_REQUIRED");
-        transactionAttributes.setProperty("add*","PROPAGATION_REQUIRED");
-        transactionAttributes.setProperty("insert*","PROPAGATION_REQUIRED");
-        transactionAttributes.setProperty("update*","PROPAGATION_REQUIRED");
-        transactionAttributes.setProperty("delete*","PROPAGATION_REQUIRED");
-        transactionAttributes.setProperty("*","readOnly");
+        transactionAttributes.setProperty("save*", "PROPAGATION_REQUIRED");
+        transactionAttributes.setProperty("add*", "PROPAGATION_REQUIRED");
+        transactionAttributes.setProperty("insert*", "PROPAGATION_REQUIRED");
+        transactionAttributes.setProperty("update*", "PROPAGATION_REQUIRED");
+        transactionAttributes.setProperty("delete*", "PROPAGATION_REQUIRED");
+        transactionAttributes.setProperty("*", "readOnly");
         interceptor.setTransactionAttributes(transactionAttributes);
         return interceptor;
     }
